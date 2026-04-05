@@ -35,8 +35,8 @@ alert("🔥 SCRIPT RUNNING");
     position:fixed;
     top:50px;
     right:20px;
-    width:320px;
-    max-height:400px;
+    width:360px;
+    max-height:450px;
     background:#111;
     color:#0f0;
     padding:20px;
@@ -50,55 +50,43 @@ alert("🔥 SCRIPT RUNNING");
 
   panel.innerHTML = `
     <div style="font-weight:bold;font-size:20px;margin-bottom:15px;text-align:center;">Arbpay Tool</div>
-    <button id="startBtn" style="width:100%;padding:12px;margin-bottom:10px;font-size:16px;">▶ START</button>
-    <button id="stopBtn" style="width:100%;padding:12px;margin-bottom:10px;font-size:16px;">⏹ STOP</button>
+    <input id="searchAmount" type="text" placeholder="Enter amount to search" style="width:100%;padding:10px;margin-bottom:10px;font-size:16px;">
+    <button id="searchBtn" style="width:100%;padding:12px;margin-bottom:10px;font-size:16px;">🔍 SEARCH & CLICK</button>
     <div id="output" style="margin-top:10px;font-size:18px;">Idle</div>
   `;
 
   document.body.appendChild(panel);
 
-  // --- STRONG AMOUNT DETECTION ---
-  function findAmount() {
-    // 1️⃣ Try common classes
-    const selectors = ["[class*='amount']", "[class*='price']", "[class*='balance']"];
-    for (let sel of selectors) {
-      const el = document.querySelector(sel);
-      if (el && el.innerText.trim().length > 0) return el.innerText.trim();
-    }
+  // --- SEARCH & CLICK FUNCTION ---
+  function searchAndClick(amount) {
+    let found = false;
 
-    // 2️⃣ Search for ₹ followed by numbers anywhere
-    const text = document.body.innerText;
-    const match = text.match(/₹\s?\d{1,3}(?:[.,]\d{3})*(?:[.,]\d+)?/g);
-    if (match && match.length > 0) return match[0];
-
-    return "Not found";
-  }
-
-  // --- OBSERVER FOR LIVE UPDATE ---
-  let observer = null;
-
-  function startTracking() {
-    if (observer) return;
-
-    observer = new MutationObserver(() => {
-      const amt = findAmount();
-      document.getElementById("output").innerText = "Amount: " + amt;
-      console.log("Amount:", amt);
+    // 1️⃣ scan all elements with text
+    const elements = document.querySelectorAll("body *");
+    elements.forEach(el => {
+      if (el.innerText && el.innerText.trim() === amount) {
+        el.click();
+        found = true;
+      }
     });
 
-    observer.observe(document.body, { childList: true, subtree: true });
+    return found;
   }
 
-  function stopTracking() {
-    if (observer) {
-      observer.disconnect();
-      observer = null;
-      document.getElementById("output").innerText = "Stopped";
+  // --- BUTTON LOGIC ---
+  const searchBtn = document.getElementById("searchBtn");
+  const output = document.getElementById("output");
+  const input = document.getElementById("searchAmount");
+
+  searchBtn.onclick = () => {
+    const val = input.value.trim();
+    if (!val) {
+      output.innerText = "❌ Enter an amount first";
+      return;
     }
-  }
 
-  // --- BUTTONS ---
-  document.getElementById("startBtn").onclick = startTracking;
-  document.getElementById("stopBtn").onclick = stopTracking;
+    const clicked = searchAndClick(val);
+    output.innerText = clicked ? `✅ Found & clicked ${val}` : `❌ ${val} not found`;
+  };
 
 })();
