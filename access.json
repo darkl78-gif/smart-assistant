@@ -1,5 +1,7 @@
 {
   "allowed": [
+    "user1",
+    "user2",
     "arnab123"
   ]
 }
