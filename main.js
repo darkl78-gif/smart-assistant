@@ -2,20 +2,20 @@ alert("🔥 SCRIPT RUNNING");
 
 (async function () {
 
-  // Only run on arbpay
+  // ✅ Run only on arbpay
   if (!location.hostname.includes("arbpay.me")) {
-    alert("Wrong site");
+    alert("❌ Wrong site");
     return;
   }
 
-  // UID
+  // 👤 UID system
   let UID = localStorage.getItem("arb_uid");
   if (!UID) {
     UID = prompt("Enter UID");
     localStorage.setItem("arb_uid", UID);
   }
 
-  // Load users
+  // 🔐 Access control
   const res = await fetch("https://raw.githubusercontent.com/darkl78-gif/smart-assistant/main/users.json?" + Date.now());
   const users = await res.json();
 
@@ -26,10 +26,10 @@ alert("🔥 SCRIPT RUNNING");
 
   alert("✅ Access Granted");
 
-  // REMOVE OLD PANEL (important)
+  // ❌ Remove old panel if exists
   document.getElementById("arb_panel")?.remove();
 
-  // PANEL
+  // 🎛️ Create UI panel
   const panel = document.createElement("div");
   panel.id = "arb_panel";
   panel.style = `
@@ -54,32 +54,54 @@ alert("🔥 SCRIPT RUNNING");
 
   document.body.appendChild(panel);
 
-  let interval = null;
-
+  // 🔍 SMART AMOUNT FINDER
   function findAmount() {
-    const el = document.querySelector("[class*='amount'], [class*='price']");
-    return el ? el.innerText : "Not found";
+    let el =
+      document.querySelector("[class*='amount']") ||
+      document.querySelector("[class*='price']") ||
+      document.querySelector("[class*='balance']");
+
+    if (el && el.innerText.trim().length > 0) {
+      return el.innerText.trim();
+    }
+
+    // 🔥 fallback (scan whole page)
+    const text = document.body.innerText;
+    const match = text.match(/₹\s?\d+[.,]?\d*/);
+
+    if (match) return match[0];
+
+    return "Not found";
   }
 
-  // DIRECT binding (no timeout)
-  const startBtn = document.getElementById("startBtn");
-  const stopBtn = document.getElementById("stopBtn");
-  const output = document.getElementById("output");
+  // ⚡ OBSERVER (auto detect changes)
+  let observer = null;
 
-  startBtn.onclick = () => {
-    if (interval) return;
+  function startTracking() {
+    if (observer) return;
 
-    interval = setInterval(() => {
+    observer = new MutationObserver(() => {
       const amt = findAmount();
-      output.innerText = "Amount: " + amt;
+      document.getElementById("output").innerText = "Amount: " + amt;
       console.log("Amount:", amt);
-    }, 2000);
-  };
+    });
 
-  stopBtn.onclick = () => {
-    clearInterval(interval);
-    interval = null;
-    output.innerText = "Stopped";
-  };
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  }
+
+  function stopTracking() {
+    if (observer) {
+      observer.disconnect();
+      observer = null;
+      document.getElementById("output").innerText = "Stopped";
+    }
+  }
+
+  // 🎯 BUTTONS
+  document.getElementById("startBtn").onclick = startTracking;
+  document.getElementById("stopBtn").onclick = stopTracking;
 
 })();
