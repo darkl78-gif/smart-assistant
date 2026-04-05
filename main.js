@@ -32,9 +32,9 @@ alert("🔥 FINAL VERSION RUNNING");
   panel.id = "arb_panel";
   panel.style = `
     position:fixed;
-    top:60px;
-    right:20px;
-    width:340px;
+    top:600px;
+    right:200px;
+    width:800px;
     background:#111;
     color:#0f0;
     padding:15px;
